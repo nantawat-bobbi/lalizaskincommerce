@@ -22,11 +22,11 @@ const products=[{id:1,icon:'🧴',name:'Daily Skin Set',sku:'DLY-01',price:890,c
 </script><script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
 const firebaseConfig={apiKey:'AIzaSyAqh_pa06GWRhAorxVqdZ9aNjVmM9osA4k',authDomain:'laliza-skin-commerce.firebaseapp.com',projectId:'laliza-skin-commerce',storageBucket:'laliza-skin-commerce.firebasestorage.app',messagingSenderId:'238246733965',appId:'1:238246733965:web:ad06527093d87023491ac4'};
 const auth=getAuth(initializeApp(firebaseConfig)), db=getFirestore(), adminUid='vWtUhboUTjhWITsaRkMEvQy9dvg1';
-window.lalizaFirebase={saveProducts:async list=>{if(!auth.currentUser)throw new Error('กรุณาเข้าสู่ระบบก่อนนำเข้าสินค้า');await Promise.all(list.map(p=>setDoc(doc(db,'products',String(p.id)),{...p,updatedAt:Date.now()})))},deleteProduct:async id=>{if(!auth.currentUser)throw new Error('กรุณาเข้าสู่ระบบใหม่ก่อนลบสินค้า');await deleteDoc(doc(db,'products',String(id)))}};
+window.lalizaFirebase={saveProducts:async list=>{if(!auth.currentUser)throw new Error('กรุณาเข้าสู่ระบบก่อนนำเข้าสินค้า');await Promise.all(list.map(p=>setDoc(doc(db,'products',String(p.id)),{...p,updatedAt:Date.now()})))},deleteProduct:async id=>{if(!auth.currentUser)throw new Error('กรุณาเข้าสู่ระบบใหม่ก่อนลบสินค้า');const current=await getDoc(doc(db,'products',String(id)));const sku=current.exists()?current.data().sku:null;const same=sku?await getDocs(query(collection(db,'products'),where('sku','==',sku))):null;await Promise.all((same?same.docs:[]).map(x=>deleteDoc(x.ref)));if(!same||!same.size)await deleteDoc(doc(db,'products',String(id)))} };
 const q=s=>document.querySelector(s), status=q('#loginStatus');
 function openApp(profile){const role=profile.role||'sales';q('#login').hidden=true;q('#app').hidden=false;q('#who').textContent=profile.name||auth.currentUser.email;q('#homeSub').textContent='แสดงข้อมูลตามสิทธิ์ของ '+q('#who').textContent;document.querySelectorAll('[data-role]').forEach(x=>x.hidden=role!=='admin'&&x.dataset.role!==role);draw()}
 const portalPins={
