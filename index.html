@@ -30,19 +30,20 @@ window.lalizaFirebase={saveProducts:async list=>{if(!auth.currentUser)throw new 
 const q=s=>document.querySelector(s), status=q('#loginStatus');
 function openApp(profile){const role=profile.role||'sales';q('#login').hidden=true;q('#app').hidden=false;q('#who').textContent=profile.name||auth.currentUser.email;q('#homeSub').textContent='แสดงข้อมูลตามสิทธิ์ของ '+q('#who').textContent;document.querySelectorAll('[data-role]').forEach(x=>x.hidden=role!=='admin'&&x.dataset.role!==role);draw()}
 const portalPins={
-  '583214':{role:'sales',name:'ทีมขาย 1'},'741926':{role:'sales',name:'ทีมขาย 2'},'306857':{role:'sales',name:'ทีมขาย 3'},
-  '925413':{role:'sales',name:'ทีมขาย 4'},'618742':{role:'sales',name:'ทีมขาย 5'},'472905':{role:'sales',name:'ทีมขาย 6'},
-  '814563':{role:'pack',name:'ทีมแพ็ก 1'},'257918':{role:'pack',name:'ทีมแพ็ก 2'},'639421':{role:'pack',name:'ทีมแพ็ก 3'},
-  '481736':{role:'pack',name:'ทีมแพ็ก 4'},'793052':{role:'pack',name:'ทีมแพ็ก 5'},'165849':{role:'pack',name:'ทีมแพ็ก 6'}
+  '166980':{role:'admin',name:'Admin · เข้าถึงทุกทีมและทุกคลัง',email:'admin@laliza-portal.local'},
+  '583214':{role:'sales',name:'ทีมขาย 1',email:'sales1@laliza-portal.local'},'741926':{role:'sales',name:'ทีมขาย 2',email:'sales2@laliza-portal.local'},'306857':{role:'sales',name:'ทีมขาย 3',email:'sales3@laliza-portal.local'},
+  '925413':{role:'sales',name:'ทีมขาย 4',email:'sales4@laliza-portal.local'},'618742':{role:'sales',name:'ทีมขาย 5',email:'sales5@laliza-portal.local'},'472905':{role:'sales',name:'ทีมขาย 6',email:'sales6@laliza-portal.local'},
+  '814563':{role:'pack',name:'ทีมแพ็ก 1',email:'pack1@laliza-portal.local'},'257918':{role:'pack',name:'ทีมแพ็ก 2',email:'pack2@laliza-portal.local'},'639421':{role:'pack',name:'ทีมแพ็ก 3',email:'pack3@laliza-portal.local'},
+  '481736':{role:'pack',name:'ทีมแพ็ก 4',email:'pack4@laliza-portal.local'},'793052':{role:'pack',name:'ทีมแพ็ก 5',email:'pack5@laliza-portal.local'},'165849':{role:'pack',name:'ทีมแพ็ก 6',email:'pack6@laliza-portal.local'}
 };
-q('#enter').onclick=()=>{const pin=q('#pin').value.trim(),profile=portalPins[pin];if(!/^\d{6}$/.test(pin)){status.textContent='กรุณากรอกรหัสตัวเลข 6 หลัก';return}if(!profile){status.textContent='รหัสไม่ถูกต้อง';return}status.textContent='';openApp(profile)};
+q('#enter').onclick=async()=>{const pin=q('#pin').value.trim(),profile=portalPins[pin];if(!/^\d{6}$/.test(pin)){status.textContent='กรุณากรอกรหัสตัวเลข 6 หลัก';return}if(!profile){status.textContent='รหัสไม่ถูกต้อง';return}try{status.textContent='กำลังเข้าสู่ระบบ…';await signInWithEmailAndPassword(auth,profile.email,pin);status.textContent=''}catch(e){status.textContent='เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่'}};
 q('#out').onclick=()=>signOut(auth);
 onAuthStateChanged(auth, async user => {
   if (!user) { q('#app').hidden=true; q('#login').hidden=false; return; }
   try {
-    if (user.uid===adminUid) await setDoc(doc(db,'users',user.uid),{name:'Admin · LALIZA',role:'admin',updatedAt:Date.now()},{merge:true});
-    const snap=await getDoc(doc(db,'users',user.uid));
-    openApp(snap.exists()?snap.data():{name:user.email,role:'sales'});
+    const profile=Object.values(portalPins).find(item=>item.email===user.email);
+    if(!profile) throw new Error('ไม่พบสิทธิ์ของบัญชีนี้');
+    openApp(profile);
     onSnapshot(collection(db,'products'), snapshot => {
       if (!snapshot.empty) { products.splice(0,products.length,...snapshot.docs.map(d=>({id:d.id,...d.data()}))); selected=products[0].id; draw(); }
     });
