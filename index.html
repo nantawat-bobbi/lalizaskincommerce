@@ -45,7 +45,7 @@ onAuthStateChanged(auth, async user => {
     if(!profile) throw new Error('ไม่พบสิทธิ์ของบัญชีนี้');
     openApp(profile);
     onSnapshot(collection(db,'products'), snapshot => {
-      if (!snapshot.empty) { products.splice(0,products.length,...snapshot.docs.map(d=>({id:d.id,...d.data()}))); selected=products[0].id; draw(); }
+      if (!snapshot.empty) { const bySku=new Map; snapshot.docs.map(d=>({id:d.id,...d.data()})).forEach(p=>{const key=(p.sku||p.id).trim().toLowerCase(),old=bySku.get(key);if(!old||Number(p.updatedAt||0)>=Number(old.updatedAt||0))bySku.set(key,p)}); products.splice(0,products.length,...bySku.values()); selected=products[0].id; draw(); }
     });
   } catch (e) { status.textContent='เชื่อมฐานข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้า'; }
 });
