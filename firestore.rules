@@ -16,6 +16,10 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
     }
+    match /settings/{settingId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
     match /orders/{orderId} {
       allow read, create: if signedIn();
       // ทีมขายอัปเดตสถานะลูกค้ายืนยัน และทีมแพ็กอัปเดตสถานะแพ็กได้
