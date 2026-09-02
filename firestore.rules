@@ -18,7 +18,9 @@ service cloud.firestore {
     }
     match /orders/{orderId} {
       allow read, create: if signedIn();
-      allow update, delete: if isAdmin();
+      // ทีมขายอัปเดตสถานะลูกค้ายืนยัน และทีมแพ็กอัปเดตสถานะแพ็กได้
+      allow update: if signedIn();
+      allow delete: if isAdmin();
     }
   }
 }
