@@ -37,7 +37,7 @@ const portalPins={
   '481736':{role:'pack',name:'ทีมแพ็ก 4',email:'pack4@laliza-portal.local'},'793052':{role:'pack',name:'ทีมแพ็ก 5',email:'pack5@laliza-portal.local'},'165849':{role:'pack',name:'ทีมแพ็ก 6',email:'pack6@laliza-portal.local'}
 };
 q('#enter').onclick=async()=>{const pin=q('#pin').value.trim(),profile=portalPins[pin];if(!/^\d{6}$/.test(pin)){status.textContent='กรุณากรอกรหัสตัวเลข 6 หลัก';return}if(!profile){status.textContent='รหัสไม่ถูกต้อง';return}try{status.textContent='กำลังเข้าสู่ระบบ…';await signInWithEmailAndPassword(auth,profile.email,pin);status.textContent=''}catch(e){status.textContent='เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่'}};
-q('#out').onclick=()=>signOut(auth);
+q('#out').onclick=async()=>{await signOut(auth).catch(()=>{});q('#app').hidden=true;q('#login').hidden=false;q('#pin').value='';status.textContent=''};
 onAuthStateChanged(auth, async user => {
   if (!user) { q('#app').hidden=true; q('#login').hidden=false; return; }
   try {
